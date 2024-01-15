@@ -1,9 +1,21 @@
 # TL;DR
 To run:
 
-```python
+```bash
 python kp-inspired-pebble-fresh-triso.py
 ```
+
+Now, sometimes, you may encounter situations where you don't want to use 
+all the threads in the computer to prevent overheating. So we may want 
+to use less threads. To do so, set the OMP\_NUM\_THREADS variable to 
+a suitable number and run the script.
+
+For example, if you want 10 threads:
+
+```bash
+OMP_NUM_THREADS=10 python kp-inspired-pebble-fresh-triso.py
+```
+
 
 # Description
 
