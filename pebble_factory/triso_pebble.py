@@ -168,7 +168,7 @@ class TrisoPebbleFactory:
         particles lost especially with very very low source
         particles. No fissionable sites can then be
         established and we will get a runtime error.
-        
+
         >>> test_sphere = openmc.Sphere(r=3.0)
         >>> test_sphere.boundary_type='reflective'
         >>> fuel_region = -test_sphere

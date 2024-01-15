@@ -6,7 +6,7 @@ import numpy as np
 import openmc.model
 
 
-def standard_test():
+def triso_pebble_keff_test():
     # import triso particle constructor
     from triso import TrisoParticlesFactory
     triso_factory = TrisoParticlesFactory()
@@ -57,15 +57,21 @@ def standard_test():
     # settings
 
     settings = openmc.Settings()
-    settings.batches = 10
-    settings.inactive = 0
-    settings.particles = 10
+    settings.batches = 200
+    settings.inactive = 50
+    settings.particles = 5000
     lowerLeft, upperRight = pebble_univ.bounding_box
     bounds = [lowerLeft[0],lowerLeft[1],lowerLeft[2],
         upperRight[0],upperRight[1],upperRight[2]]
     uniform_dist = openmc.stats.Box(bounds[:3], bounds[3:],
         only_fissionable=True)
     settings.source = openmc.Source(space=uniform_dist)
+
+    # shannon entropy mesh
+    entropy_mesh = openmc.RegularMesh()
+    entropy_mesh.lower_left, entropy_mesh.upper_right = geometry.bounding_box
+    entropy_mesh.dimension = (8, 8, 8)
+    settings.entropy_mesh = entropy_mesh
 
     # export to xml
     materials.export_to_xml()
@@ -78,5 +84,5 @@ def standard_test():
 if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
-    standard_test()
+    triso_pebble_keff_test()
 
