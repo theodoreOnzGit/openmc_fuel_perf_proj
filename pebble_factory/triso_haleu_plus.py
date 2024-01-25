@@ -19,6 +19,7 @@ import types
 import openmc
 import openmc.model
 
+
 class TrisoParticlesFactory:
 
     """TrisoParticlesFactory is responsible for creating a triso universe to fill
@@ -44,6 +45,7 @@ class TrisoParticlesFactory:
     def build_haleu_plus_triso_materials(
             self,
             light_uranium_enrichment_atom_percent,
+            fraction_of_u236_in_light_uranium,
             flibe_enrichment_atom_percent,
             coolant_temp):
         """
@@ -51,11 +53,11 @@ class TrisoParticlesFactory:
         haleu plus fhr materials function. Haleu plus is made of
         reprocessed uranium from spent LWR fuel. The main issue with
         haleu plus is that there is some U236 contamination which is
-        difficult to separate from U235 but easy to separate from 
-        U238.
-
-        
-
+        difficult to separate from U235 but easy to separate from
+        U238. From literature, I can roughly see that the U235 to U236
+        ratio at worst is probably 1:1. Given this, I am going to allow
+        the user to input the light fraction of uranium (u236 and u235)
+        and then specify how much of that is u236.
 
 
         We are testing a few things here,
@@ -70,15 +72,21 @@ class TrisoParticlesFactory:
         Li7_enrichment_atom_percent,
         temperature)
 
-        >>> pebbleMaterials = triso_obj.build_fhr_materials(19.9, 99.5, 720)
+        >>> pebbleMaterials = triso_obj.build_haleu_plus_triso_materials(\
+                19.9,\
+                0.5,\
+                99.5,\
+                720)
         >>> pebbleMaterials.fuel.nuclides[0].name
         'U235'
+        >>> pebbleMaterials.fuel.nuclides[1].name
+        'U236'
         >>> import numpy
 
-        The amount of uranium 235 should be about 6.6 atom percent
+        The amount of uranium 235 should be about 3.3 atom percent
         approximately
         >>> numpy.absolute(1.0 - pebbleMaterials.fuel.nuclides[0].percent\
-                /0.066403514) > 0.01
+                /0.033203514) > 0.01
         False
 
         Next is the Flibe percent of Li7
@@ -95,12 +103,18 @@ class TrisoParticlesFactory:
         o16_fraction = 0.5
         carbon_fraction = 1.6667e-01
         total_uranium_amount = 1.0 - o16_fraction - carbon_fraction
-        uranium_235_fraction = light_uranium_enrichment_atom_percent/100
+        uranium_236_fraction = (light_uranium_enrichment_atom_percent
+                                * fraction_of_u236_in_light_uranium)/100
+        uranium_235_fraction = (light_uranium_enrichment_atom_percent
+                                * (1-fraction_of_u236_in_light_uranium)
+                                )/100
 
         fuel = openmc.Material(name='fuel')
         fuel.set_density('g/cm3', 10.5)
         fuel.add_nuclide(
                 'U235', total_uranium_amount*uranium_235_fraction)
+        fuel.add_nuclide(
+                'U236', total_uranium_amount*uranium_236_fraction)
         fuel.add_nuclide(
                 'U238', total_uranium_amount*(1-uranium_235_fraction))
         fuel.add_nuclide('O16',  o16_fraction)
@@ -390,7 +404,7 @@ class TrisoParticlesFactory:
                 upperRight[0],upperRight[1],upperRight[2]]
         >>> uniform_dist = openmc.stats.Box(bounds[:3], bounds[3:],\
                 only_fissionable=True)
-        >>> settings.source = openmc.Source(space=uniform_dist)
+        >>> settings.source = openmc.IndependentSource(space=uniform_dist)
 
         Export all to xml
         >>> materials.export_to_xml()

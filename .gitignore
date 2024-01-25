@@ -162,3 +162,5 @@ cython_debug/
 *.xml 
 *.h5
 *.out
+node_modules
+*.json
