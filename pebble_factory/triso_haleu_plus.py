@@ -206,6 +206,155 @@ class TrisoParticlesFactory:
 
         return pebble_materials
 
+    def build_haleu_plus_fhr_materials(
+            self,
+            light_uranium_enrichment_atom_percent,
+            light_uranium_u236_fraction,
+            flibe_enrichment_atom_percent,
+            coolant_temp):
+        """
+        This shows a documentation test, of how to use the build
+        fhr materials function
+
+        We are testing a few things here,
+        first, the U235 atom percent
+
+        >>> triso_obj = TrisoParticlesFactory()
+        loading modules for triso particles...
+
+        Now to use this, we have three inputs,
+        build_haleu_plus_fhr_materials(
+        light_uranium_enrichment_atom_percent,
+        light_uranium_u236_fraction,
+        Li7_enrichment_atom_percent,
+        temperature)
+
+        >>> pebbleMaterials = triso_obj.build_haleu_plus_fhr_materials(\
+                19.9, 0.5, 99.5, 720)
+        >>> pebbleMaterials.fuel.nuclides[0].name
+        'U235'
+        >>> pebbleMaterials.fuel.nuclides[1].name
+        'U236'
+
+        >>> import numpy
+
+        The amount of uranium 235 should be about 3.3 atom percent
+        approximately
+        >>> numpy.absolute(1.0 - pebbleMaterials.fuel.nuclides[0].percent\
+                /0.033203514) > 0.01
+        False
+
+        Next is the Flibe percent of Li7
+        >>> pebbleMaterials.flibe.nuclides[1].name
+        'Li7'
+        >>> pebbleMaterials.flibe.nuclides[1].percent
+        1.99
+        """
+
+        # we want to set uranium enrichment by atoms,
+        # this amount allows us to define uranium atom
+        # amount by some atomic density i think, got to check
+        # the triso tutorial
+        o16_fraction = 0.5
+        carbon_fraction = 1.6667e-01
+        total_uranium_amount = 1.0 - o16_fraction - carbon_fraction
+        uranium_235_fraction = (light_uranium_enrichment_atom_percent
+                                * (1-light_uranium_u236_fraction)
+                                )/100
+        uranium_236_fraction = (light_uranium_enrichment_atom_percent
+                                * (light_uranium_u236_fraction)
+                                )/100
+
+        fuel = openmc.Material(name='fuel')
+        fuel.set_density('g/cm3', 10.5)
+        fuel.add_nuclide(
+                'U235', total_uranium_amount*uranium_235_fraction)
+        fuel.add_nuclide(
+                'U236', total_uranium_amount*uranium_236_fraction)
+        fuel.add_nuclide(
+                'U238', total_uranium_amount*(1-uranium_235_fraction))
+        fuel.add_nuclide('O16',  o16_fraction)
+        fuel.add_nuclide('C0', carbon_fraction)
+        fuel.id = 1
+
+        buff = openmc.Material(name='buffer')
+        buff.set_density('g/cm3', 1.0)
+        buff.add_nuclide('C0', 1.0)
+        buff.add_s_alpha_beta('c_Graphite')
+        buff.id = 2
+
+        PyC1 = openmc.Material(name='PyC1')
+        PyC1.set_density('g/cm3', 1.9)
+        PyC1.add_nuclide('C0', 1.0)
+        PyC1.add_s_alpha_beta('c_Graphite')
+        PyC1.id = 3
+
+        PyC2 = openmc.Material(name='PyC2')
+        PyC2.set_density('g/cm3', 1.87)
+        PyC2.add_nuclide('C0', 1.0)
+        PyC2.add_s_alpha_beta('c_Graphite')
+        PyC2.id = 4
+
+        SiC = openmc.Material(name='SiC')
+        SiC.set_density('g/cm3', 3.2)
+        SiC.add_nuclide('C0', 0.5)
+        SiC.add_element('Si', 0.5)
+        SiC.id = 5
+
+        graphite = openmc.Material(name='graphite')
+        graphite.set_density('g/cm3', 1.1995)
+        graphite.add_nuclide('C0', 1.0)
+        graphite.add_s_alpha_beta('c_Graphite')
+        graphite.id = 6
+
+        total_lithium_ratio = 2
+        lithium_7_fraction = flibe_enrichment_atom_percent/100
+        flibe = openmc.Material(name='flibe')
+
+        # this code calculates flibe density by temperature in g/cm3
+
+        flibe_density = self.flibe_density_cm3(coolant_temp)
+        flibe.set_density('g/cm3', flibe_density)
+        flibe.temperature = coolant_temp
+        flibe.add_nuclide('F19', 4.0)
+        flibe.add_nuclide('Li7', total_lithium_ratio*lithium_7_fraction)
+        flibe.add_nuclide('Li6', total_lithium_ratio*(1.0-lithium_7_fraction))
+        flibe.add_nuclide('Be9', 1.0)
+        flibe.id = 7
+
+        # the last step assign the materials into the self object
+
+        # note: i cannot just set sub-attributes for
+        # customMaterials without first setting a
+        # customMaterials attribute
+
+        # so i initialise an empty object by using simplenamespace under
+        # the type module
+        # https://stackoverflow.com/questions/19476816/creating-an-empty-object-in-python
+        # https://newbedev.com/creating-an-empty-object-in-python
+
+        pebble_materials = types.SimpleNamespace()
+        pebble_materials.fuel = fuel
+        pebble_materials.buff = buff
+        pebble_materials.PyC1 = PyC1
+        pebble_materials.PyC2 = PyC2
+        pebble_materials.SiC = SiC
+        pebble_materials.graphite = graphite
+        pebble_materials.flibe = flibe
+
+        # now the mixedtrisoshell material, is
+        # the material for triso shell covering
+        # containing all the above materials,
+        # SiC, PyC1, PyC2, buffer, graphite etc. homogenised
+        # i will use a function to build
+        # this mixedTrisoShellMaterial up in a function
+
+        # this code is kind of legacy, helps to
+        # build a triso shell where moderator materials are homogenised
+        # self.buildMixedTrisoShellMaterial()
+
+        return pebble_materials
+
     def build_fhr_materials(self,
                             uranium_enrichment_atom_percent,
                             flibe_enrichment_atom_percent,
