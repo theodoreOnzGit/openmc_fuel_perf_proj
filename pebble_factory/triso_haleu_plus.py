@@ -22,7 +22,8 @@ import openmc.model
 
 class TrisoParticlesFactory:
 
-    """TrisoParticlesFactory is responsible for creating a triso universe to fill
+    """TrisoParticlesFactory is responsible for creating a
+    triso universe to fill
     a pebble
 
     The idea is to build and return a materials and geometry
