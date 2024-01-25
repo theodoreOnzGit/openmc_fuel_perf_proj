@@ -2,7 +2,7 @@
 To run:
 
 ```bash
-python kp-inspired-pebble-fresh-triso.py
+python kp-inspired-haleu-plus-triso-pebble.py
 ```
 
 Now, sometimes, you may encounter situations where you don't want to use 
@@ -16,6 +16,12 @@ For example, if you want 10 threads:
 OMP_NUM_THREADS=10 python kp-inspired-pebble-fresh-triso.py
 ```
 
+For post processing, it generates a jpg file and csv file with the keff 
+over time for this pebble.
+
+```bash
+python postprocessing.py
+```
 
 # Description
 
