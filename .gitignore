@@ -161,3 +161,9 @@ cython_debug/
 *.png 
 *.xml 
 *.h5
+*.out
+node_modules
+*.json
+*.png 
+*.jpg
+*.csv
