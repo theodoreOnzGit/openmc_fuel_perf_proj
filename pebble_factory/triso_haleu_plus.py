@@ -89,6 +89,13 @@ class TrisoParticlesFactory:
                 /0.033203514) > 0.01
         False
 
+        The amount of uranium 236 should also be about 3.3 atom percent
+        approximately
+        >>> numpy.absolute(1.0 - pebbleMaterials.fuel.nuclides[1].percent\
+                /0.033203514) > 0.01
+        False
+
+
         Next is the Flibe percent of Li7
         >>> pebbleMaterials.flibe.nuclides[1].name
         'Li7'
