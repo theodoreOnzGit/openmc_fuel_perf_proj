@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../../pebble_factory/')
 import openmc.deplete
-
+import numpy as np
 
 def postprocess_depletion():
 
@@ -14,8 +14,13 @@ def postprocess_depletion():
 
     pyplot.errorbar(time, k[:, 0], yerr=k[:, 1])
     pyplot.xlabel("Time [d]")
-    pyplot.ylabel("$k_{eff}\pm \sigma$");
+    pyplot.ylabel("$k_{eff}\pm \sigma$")
     pyplot.savefig("depletion_results.jpg")
+
+    # for csv export
+    arr = np.array([time, k[:, 0], k[:, 1]])
+    arr = np.transpose(arr)
+    np.savetxt('depletion_results.csv', arr, delimiter=',')
 
 
 
